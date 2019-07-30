@@ -1,13 +1,13 @@
-DECLARE @ContractorOrg NVARCHAR(max), @contractorPK INT, @searchTerm NVARCHAR(max), @policyStart NVARCHAR(50), @policyEnd NVARCHAR(50), @participantPK INT, @DocType NVARCHAR(20), @documentName NVARCHAR(max), @DocumentSector NVARCHAR(25), @documentUploadDate DATETIME, @documentOwner NVARCHAR(100), @documentFinalPath NVARCHAR(max), @doInsert NCHAR(1)
+DECLARE @ContractorOrg NVARCHAR(max), @searchTerm NVARCHAR(max), @policyStart NVARCHAR(50), @policyEnd NVARCHAR(50), @participantPK INT, @DocType NVARCHAR(20), @documentName NVARCHAR(max), @DocumentSector NVARCHAR(25), @documentUploadDate DATETIME, @documentOwner NVARCHAR(100), @documentFinalPath NVARCHAR(max), @doInsert NCHAR(1)
 DECLARE @ContractorResults TABLE (pk_participantID INT NOT NULL, suggestedDocumentPrefix NVARCHAR(max) NOT NULL, ContractorFameName NVARCHAR(max) NOT NULL)
 
 ---Step 1: Change these values as necessary---
 SET @searchTerm = 'Action Garage Doors'
-SET @policyStart = ''
-SET @policyEnd = ''
+SET @policyStart = '20190531'
+SET @policyEnd = '20200531'
 SET @DocType = 'CERTLIAB'
 SET @documentOwner = 'Lorinda Backus'
-SET @documentUploadDate = '2012-06-05 12:00:00.000'
+SET @documentUploadDate = '2019-06-01'
 ----------------------------------------------
 
 --Step 2: set to 'N' to preview before insert--
@@ -19,9 +19,9 @@ SET @doInsert = 'N'
 SET @DocumentName = CONCAT(@DocType, '_', (SELECT TOP(1) suggestedDocumentPrefix FROM @ContractorResults ORDER BY suggestedDocumentPrefix), '_', @policyStart, '_', @policyEnd, '.pdf')
 SET @ContractorOrg = (SELECT TOP(1) fullname_FL_dnd FROM dbo.participant WHERE fullname_FL_dnd LIKE '%' + @searchTerm + '%' ORDER BY fullname_FL_dnd)
 SET @participantPK = (SELECT TOP(1) pk_participant FROM dbo.participant WHERE fullname_FL_dnd LIKE '%' + @searchTerm + '%' ORDER BY pk_participant) 
-INSERT INTO @ContractorResults (pk_participantID,suggestedDocumentPrefix, ContractorFameName) VALUES (@contractorPK, REPLACE(@ContractorOrg, ' ', ''), @ContractorOrg)
+INSERT INTO @ContractorResults (pk_participantID,suggestedDocumentPrefix, ContractorFameName) VALUES (@participantPK, REPLACE(@ContractorOrg, ' ', ''), @ContractorOrg)
 SELECT pk_participantID, suggestedDocumentPrefix, ContractorFameName FROM @ContractorResults
-SELECT * FROM dbo.documentArchive WHERE PK_1 = @contractorPK AND filename_actual LIKE @DocType + '%'
+SELECT * FROM dbo.documentArchive WHERE PK_1 = @participantPK AND filename_actual LIKE @DocType + '%'
 
 IF @DocType = 'CERTLIAB'
 BEGIN
